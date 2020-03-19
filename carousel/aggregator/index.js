@@ -18,6 +18,16 @@ function sizePortals() {
 sizePortals();
 addEventListener('resize', sizePortals);
 
+let lastActivatedPortal;
+let bigCarouselMode = false;
+
+addEventListener('portalactivate', event => {
+  console.log('portalactivate');
+  const portal = event.adoptPredecessor();
+  portal.style.cssText = lastActivatedPortal.style.cssText;
+  lastActivatedPortal.replaceWith(portal);
+});
+
 const sitesEl = document.querySelector('.sites');
 const perspective = parseFloat(
   window.getComputedStyle(sitesEl.parentNode).perspective,
@@ -38,12 +48,33 @@ sitesEl.addEventListener('click', event => {
   const topShift = -(portalBounds.top / scaleNeeded);
   sitesEl.style.transform = '';
   const transform = `translate(${leftShift}px, ${topShift}px) translateZ(${transformNeeded}px)`;
+
+  // Show dots
+  if (!bigCarouselMode) {
+    const portalContainer = portal.parentNode;
+    selectDot([...sitesEl.children].indexOf(portalContainer));
+    pageDots.classList.add('active');
+    pageDots.animate(
+      [{ transform: 'translateY(calc(-100% - 20px))' }, { transform: 'none' }],
+      {
+        easing: 'ease-out',
+        delay: 200,
+        duration: 200,
+        fill: 'backwards',
+      },
+    );
+  }
+
+  // Animate scroller
   sitesEl.animate([{ transform: 'none' }, { transform }], {
     easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
-    duration: 500,
+    duration: bigCarouselMode ? 100 : 500,
   }).onfinish = () => {
     sitesEl.style.transform = transform;
-    portal.activate();
+    lastActivatedPortal = portal;
+    portal.activate().then(() => {
+      activateBigCarouselMode();
+    });
   };
 });
 
@@ -51,7 +82,8 @@ pageDots.append(
   ...[...sitesEl.children].map(() => document.createElement('div')),
 );
 
-function selectDot(activeDot) {
+function selectDot(index) {
+  const activeDot = pageDots.children[index];
   if (activeDot.classList.contains('active')) return;
   for (const dot of activeDot.parentNode.children) {
     dot.classList[dot === activeDot ? 'add' : 'remove']('active');
@@ -62,13 +94,15 @@ function selectDots() {
   for (const [i, portalContainer] of [...sitesEl.children].entries()) {
     const bounds = portalContainer.getBoundingClientRect();
     if (bounds.left + innerWidth / 2 < 0) continue;
-    selectDot(pageDots.children[i]);
+    selectDot(i);
     return;
   }
 }
 
-function bigCarouselMode() {
+function activateBigCarouselMode() {
+  bigCarouselMode = true;
   document.documentElement.classList.add('big-carousel-mode');
+  sitesEl.style.transform = '';
   selectDots();
   sizePortals();
   sitesEl.addEventListener('scroll', selectDots);

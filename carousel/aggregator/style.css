@@ -54,10 +54,6 @@ body {
   cursor: pointer;
 }
 
-.page-dots {
-  display: none;
-}
-
 .big-carousel-mode {
   overflow: hidden;
 }
@@ -82,7 +78,11 @@ body {
   width: calc(100vw - var(--gap) * 2);
 }
 
-.big-carousel-mode .page-dots {
+.page-dots {
+  display: none;
+}
+
+.page-dots.active {
   background: #444;
   display: grid;
   grid-auto-columns: min-content;
@@ -98,7 +98,7 @@ body {
   box-shadow: 0 5px 9px #00000085;
 }
 
-.big-carousel-mode .page-dots > div {
+.page-dots > div {
   --color: #fff;
   border-radius: 100%;
   --size: 10px;
@@ -107,6 +107,6 @@ body {
   border: 1px solid var(--color);
 }
 
-.big-carousel-mode .page-dots > div.active {
+.page-dots > div.active {
   background: var(--color);
 }

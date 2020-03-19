@@ -21,3 +21,20 @@ h1 {
     font-size: 104.94px;
   }
 }
+
+.aggregator-portal-container {
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  box-shadow: 0 5px 9px #00000085;
+}
+
+.aggregator-portal-container portal {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
