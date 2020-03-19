@@ -74,6 +74,7 @@ sitesEl.addEventListener('click', event => {
     lastActivatedPortal = portal;
     portal.activate().then(() => {
       activateBigCarouselMode();
+      portal.scrollIntoView();
     });
   };
 });
