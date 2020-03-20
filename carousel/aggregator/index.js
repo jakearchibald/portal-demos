@@ -1,4 +1,11 @@
+const sitesEl = document.querySelector('.sites');
+const perspective = parseFloat(
+  window.getComputedStyle(sitesEl.parentNode).perspective,
+);
+const pageDots = document.querySelector('.page-dots');
+
 function sizePortals() {
+  if (sitesEl.style.transform) return;
   const containers = document.querySelectorAll('.portal-container');
   const portals = document.querySelectorAll('.portal-container portal');
   if (containers.length === 0) return;
@@ -18,25 +25,7 @@ function sizePortals() {
 sizePortals();
 addEventListener('resize', sizePortals);
 
-let lastActivatedPortal;
-let bigCarouselMode = false;
-
-addEventListener('portalactivate', event => {
-  console.log('portalactivate');
-  const portal = event.adoptPredecessor();
-  portal.style.cssText = lastActivatedPortal.style.cssText;
-  lastActivatedPortal.replaceWith(portal);
-});
-
-const sitesEl = document.querySelector('.sites');
-const perspective = parseFloat(
-  window.getComputedStyle(sitesEl.parentNode).perspective,
-);
-const pageDots = document.querySelector('.page-dots');
-
-sitesEl.addEventListener('click', event => {
-  const portal = event.target.closest('portal');
-  if (!portal) return;
+function getFullscreenTransformForPortal(portal) {
   // This involves a little layout thrashing.
   // It's possible to do it without, but maths is hard and I'm tired.
   let portalBounds = portal.getBoundingClientRect();
@@ -47,7 +36,38 @@ sitesEl.addEventListener('click', event => {
   const leftShift = -(portalBounds.left / scaleNeeded);
   const topShift = -(portalBounds.top / scaleNeeded);
   sitesEl.style.transform = '';
-  const transform = `translate(${leftShift}px, ${topShift}px) translateZ(${transformNeeded}px)`;
+  return `translate(${leftShift}px, ${topShift}px) translateZ(${transformNeeded}px)`;
+}
+
+let lastActivatedPortal;
+let bigCarouselMode = false;
+
+addEventListener('portalactivate', event => {
+  const portal = event.adoptPredecessor();
+  // In reality, I'd want to assert something about the origin of the portal here.
+  portal.style.cssText = lastActivatedPortal.style.cssText;
+  lastActivatedPortal.replaceWith(portal);
+  sitesEl.animate(
+    [{ transform: sitesEl.style.transform }, { transform: 'none' }],
+    {
+      easing: 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+      duration: 1000,
+    },
+  ).onfinish = () => {
+    sitesEl.style.transform = '';
+  };
+});
+
+// Prevent clicks while transitioning
+let clickInProgress = false;
+
+sitesEl.addEventListener('click', event => {
+  const portal = event.target.closest('portal');
+  if (!portal || clickInProgress) return;
+  clickInProgress = true;
+  // Stop any scroll intertia
+  sitesEl.scrollLeft = sitesEl.scrollLeft;
+  const transform = getFullscreenTransformForPortal(portal);
 
   // Show dots
   if (!bigCarouselMode) {
@@ -73,8 +93,11 @@ sitesEl.addEventListener('click', event => {
     sitesEl.style.transform = transform;
     lastActivatedPortal = portal;
     portal.activate().then(() => {
+      sitesEl.style.transform = '';
       activateBigCarouselMode();
       portal.scrollIntoView();
+      sitesEl.style.transform = getFullscreenTransformForPortal(portal);
+      clickInProgress = false;
     });
   };
 });

@@ -1,3 +1,7 @@
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -7,6 +11,7 @@ html {
   background: #fff;
 }
 body {
+  overscroll-behavior-y: none;
   margin: 20px;
 }
 h1 {
@@ -30,6 +35,11 @@ h1 {
   right: 0;
   height: 50px;
   box-shadow: 0 5px 9px #00000085;
+  transition: transform 100ms ease-in-out;
+}
+
+.aggregator-portal-container.hide {
+  transform: translateY(calc(-100% - 20px));
 }
 
 .aggregator-portal-container portal {
