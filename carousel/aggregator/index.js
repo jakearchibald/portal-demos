@@ -39,14 +39,19 @@ function getFullscreenTransformForPortal(portal) {
   return `translate(${leftShift}px, ${topShift}px) translateZ(${transformNeeded}px)`;
 }
 
+const noPortalReplace = new URL(location.href).searchParams.has(
+  'no-portal-replace',
+);
 let lastActivatedPortal;
 let bigCarouselMode = false;
 
 addEventListener('portalactivate', event => {
   const portal = event.adoptPredecessor();
   // In reality, I'd want to assert something about the origin of the portal here.
-  portal.style.cssText = lastActivatedPortal.style.cssText;
-  lastActivatedPortal.replaceWith(portal);
+  if (!noPortalReplace) {
+    portal.style.cssText = lastActivatedPortal.style.cssText;
+    lastActivatedPortal.replaceWith(portal);
+  }
   sitesEl.animate(
     [{ transform: sitesEl.style.transform }, { transform: 'none' }],
     {
