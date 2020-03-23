@@ -39,13 +39,14 @@ function getFullscreenTransformForPortal(portal) {
   return `translate(${leftShift}px, ${topShift}px) translateZ(${transformNeeded}px)`;
 }
 
+// Just to demo a bug.
 const noPortalReplace = new URL(location.href).searchParams.has(
   'no-portal-replace',
 );
 let lastActivatedPortal;
 let bigCarouselMode = false;
 
-addEventListener('portalactivate', event => {
+addEventListener('portalactivate', (event) => {
   const portal = event.adoptPredecessor();
   // In reality, I'd want to assert something about the origin of the portal here.
   if (!noPortalReplace) {
@@ -66,7 +67,7 @@ addEventListener('portalactivate', event => {
 // Prevent clicks while transitioning
 let clickInProgress = false;
 
-sitesEl.addEventListener('click', event => {
+sitesEl.addEventListener('click', (event) => {
   const portal = event.target.closest('portal');
   if (!portal || clickInProgress) return;
   clickInProgress = true;
